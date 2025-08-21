@@ -53,3 +53,21 @@ format.tex
 # Don't ignore .github directory  
 !.github/
 !.github/*
+
+# Python MCP Server files
+!mcp_server.py
+!requirements.txt
+!config.yaml
+!Dockerfile
+!README_python.md
+!test_mcp_server.py
+!test_examples.sh
+
+# Python cache and virtual environment
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+.venv
+env/
+venv/
