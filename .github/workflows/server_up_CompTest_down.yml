@@ -1,4 +1,4 @@
-name: Server Up and Down Test
+name: FastMCP Server Tests
 
 on:
   push:
@@ -24,7 +24,7 @@ jobs:
     - name: Install system dependencies
       uses: awalsh128/cache-apt-pkgs-action@latest
       with:
-        packages: libgsl-dev build-essential libjsoncpp-dev
+        packages: libgsl-dev build-essential
         version: 1.0
 
     - name: Install Python dependencies
@@ -34,10 +34,13 @@ jobs:
       run: make clean && make
 
     - name: Test MCP server tools registration
-      run: python3 test_server_tools.py
+      run: python3 Tests/test_server_tools.py
 
     - name: Test MCP protocol communication
-      run: python3 test_mcp_stdio.py
+      run: python3 Tests/test_mcp_stdio.py
 
-    - name: Test MCP tool calls
-      run: python3 comprehensive_test_mcp.py
+    - name: Test comprehensive MCP tool calls
+      run: python3 Tests/comprehensive_test_mcp.py
+
+    - name: Test FastMCP validation tool
+      run: python3 Tests/test_validation_tool.py

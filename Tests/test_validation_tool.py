@@ -12,7 +12,7 @@ async def test_validation_tool():
     
     # Start the MCP server
     process = await asyncio.create_subprocess_exec(
-        sys.executable, "seq2exp_mcp_server.py",
+        sys.executable, "../seq2exp_mcp_server.py",
         cwd="/home/runner/work/MPA/MPA",
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,

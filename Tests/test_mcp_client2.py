@@ -5,6 +5,7 @@ Python CLI client for testing the seq2exp MCP server
 
 import asyncio
 import json
+import os
 import sys
 import argparse
 import subprocess
@@ -21,13 +22,12 @@ class MCPClient:
     
     async def start_server(self):
         """Start the MCP server process"""
-        self.process = subprocess.Popen(
-            ["python3", "seq2exp_mcp_server.py"],
-            stdin=subprocess.PIPE,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            text=True,
-            cwd="/home/j/MPA"
+        self.server_process = await asyncio.create_subprocess_exec(
+            ["python3", "../seq2exp_mcp_server.py"],
+            stdin=asyncio.subprocess.PIPE,
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE,
+            cwd=os.path.dirname(os.path.dirname(__file__))  # Parent directory
         )
         
     async def send_request(self, request: Dict[str, Any]) -> Optional[Dict[str, Any]]:

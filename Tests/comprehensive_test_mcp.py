@@ -15,11 +15,11 @@ async def test_mcp_tool_call():
     
     # Start the MCP server process
     process = await asyncio.create_subprocess_exec(
-        sys.executable, "seq2exp_mcp_server.py",
+        sys.executable, "../seq2exp_mcp_server.py",
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
         stderr=asyncio.subprocess.PIPE,
-        cwd="."
+        cwd=".."  # Run from parent directory where iData is located
     )
     
     try:
@@ -29,8 +29,8 @@ async def test_mcp_tool_call():
             "id": 1,
             "method": "initialize",
             "params": {
-                "protocolVersion": "1.0.0",
-                "capabilities": {},
+                "protocolVersion": "2024-11-05",
+                "capabilities": {"roots": {}, "sampling": {}},
                 "clientInfo": {"name": "test-client", "version": "1.0.0"}
             }
         }

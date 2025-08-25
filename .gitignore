@@ -48,6 +48,10 @@ temp_config_*.conf
 !iData/
 !iData/*
 
+# Don't ignore test directory
+!Tests/
+!Tests/*
+
 # Don't ignore .github directory  
 !.github/
 !.github/*
