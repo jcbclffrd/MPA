@@ -12,17 +12,14 @@ async def test_validation_tool():
     
     # Start the MCP server
     process = await asyncio.create_subprocess_exec(
-        sys.executable, "../seq2exp_mcp_server.py",
+        sys.executable, "seq2exp_mcp_server.py",
         cwd="/home/runner/work/MPA/MPA",
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE
+        stderr=asyncio.subprocess.DEVNULL  # Ignore banner output
     )
     
     try:
-        # Wait for server to start
-        await asyncio.sleep(2)
-        
         # Initialize
         init_request = {
             "jsonrpc": "2.0",
@@ -61,7 +58,7 @@ modelOption = BINS"""
             "id": 2,
             "method": "tools/call",
             "params": {
-                "name": "seq2exp_validate_config",
+                "name": "seq2exp_validate_config_impl",
                 "arguments": {
                     "config_content": test_config
                 }
@@ -78,14 +75,18 @@ modelOption = BINS"""
             response = json.loads(response_data.decode().strip())
             print(f"Validation response received")
             
-            if "result" in response and "structuredContent" in response["result"]:
-                result = response["result"]["structuredContent"]
-                print(f"✓ Validation successful!")
-                print(f"  Valid: {result.get('valid', 'unknown')}")
-                print(f"  Parameters parsed: {result.get('parameter_count', 0)}")
-                if result.get('issues'):
-                    print(f"  Issues: {result['issues']}")
-                return True
+            if "result" in response and "content" in response["result"]:
+                # FastMCP returns content as a list of objects
+                content = response["result"]["content"]
+                if content and len(content) > 0 and content[0].get("type") == "text":
+                    text_content = content[0]["text"]
+                    print(f"✓ Validation successful!")
+                    print(f"Response: {text_content}")
+                    return True
+                else:
+                    print("✗ Unexpected content format")
+                    print(content)
+                    return False
             else:
                 print("✗ Unexpected validation response format")
                 print(response)

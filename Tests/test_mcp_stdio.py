@@ -14,13 +14,13 @@ async def test_mcp_server():
     """Test the MCP server via stdio communication"""
     print("Testing seq2exp MCP server via stdio...")
     
-    # Start the MCP server process
+    # Start the MCP server process from the correct directory
     process = await asyncio.create_subprocess_exec(
-        sys.executable, "../seq2exp_mcp_server.py",
+        sys.executable, "seq2exp_mcp_server.py",
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-        cwd=".."  # Run from parent directory where iData is located
+        stderr=asyncio.subprocess.DEVNULL,  # Ignore banner output
+        cwd="/home/runner/work/MPA/MPA"  # Run from the correct directory
     )
     
     try:
@@ -41,7 +41,7 @@ async def test_mcp_server():
         process.stdin.write(init_message.encode())
         await process.stdin.drain()
         
-        # Read response with timeout and better error handling
+        # Read response with timeout
         try:
             response_line = await asyncio.wait_for(process.stdout.readline(), timeout=10.0)
             if response_line:
