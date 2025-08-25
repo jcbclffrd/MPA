@@ -15,11 +15,11 @@ async def test_mcp_tool_call():
     
     # Start the MCP server process
     process = await asyncio.create_subprocess_exec(
-        sys.executable, "../seq2exp_mcp_server.py",
+        sys.executable, "seq2exp_mcp_server.py",
         stdin=asyncio.subprocess.PIPE,
         stdout=asyncio.subprocess.PIPE,
-        stderr=asyncio.subprocess.PIPE,
-        cwd=".."  # Run from parent directory where iData is located
+        stderr=asyncio.subprocess.DEVNULL,  # Ignore banner output
+        cwd="/home/runner/work/MPA/MPA"  # Run from the correct directory
     )
     
     try:
