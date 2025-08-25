@@ -44,9 +44,6 @@ temp_config_*.conf
 *.log
 *.ps
 
-# Ignore other temporary files
-start_mcp_server.sh
-
 # Don't ignore input data directory
 !iData/
 !iData/*

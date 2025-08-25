@@ -40,53 +40,79 @@ curl -X POST "http://localhost:8083/tools/seq2exp_predict" \
   }'
 ```
 
-## API Endpoints
+## MCP Tools
 
-### 1. Configuration Template
-
-**GET** `/tools/seq2exp_config_template`
+### 1. seq2exp_config_template
 
 Returns the default seq2exp configuration file as a template.
 
-**Response:**
+**MCP Tool Call:**
 ```json
 {
-  "template": "# Complete seq2exp configuration file\n...",
-  "description": "Default seq2exp configuration template...",
-  "usage": "Copy this template and modify..."
+  "jsonrpc": "2.0",
+  "id": 1,
+  "method": "tools/call", 
+  "params": {
+    "name": "seq2exp_config_template",
+    "arguments": {}
+  }
 }
 ```
 
-### 2. Configuration Validation
+**Response:**
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "template: # Complete seq2exp configuration file\n...\ndescription: Default seq2exp configuration template...\nusage: Copy this template and modify..."
+      }
+    ]
+  }
+}
+```
 
-**POST** `/tools/seq2exp_validate_config`
+### 2. seq2exp_validate_config
 
 Validates configuration file content without running seq2exp.
 
-**Request Body:**
+**MCP Tool Call:**
 ```json
 {
-  "config_content": "seqFile = iData/rhoseq.txt\nexprFile = iData/rhoexp.tab\n..."
+  "jsonrpc": "2.0",
+  "id": 2,
+  "method": "tools/call",
+  "params": {
+    "name": "seq2exp_validate_config",
+    "arguments": {
+      "config_content": "seqFile = iData/rhoseq.txt\nexprFile = iData/rhoexp.tab\n..."
+    }
+  }
 }
 ```
 
 **Response:**
 ```json
 {
-  "valid": true,
-  "issues": [],
-  "parsed_config": {
-    "seqFile": "iData/rhoseq.txt",
-    "exprFile": "iData/rhoexp.tab",
-    ...
-  },
-  "parameter_count": 16
+  "jsonrpc": "2.0", 
+  "id": 2,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "valid: true\nissues: []\nparameter_count: 16\nparsed_config: {...}"
+      }
+    ]
+  }
 }
 ```
 
-### 3. Gene Expression Prediction
+### 3. seq2exp_predict
 
-**POST** `/tools/seq2exp_predict`
+Executes the complete seq2exp gene expression prediction pipeline.
 
 Main prediction endpoint that executes seq2exp and returns results.
 
@@ -177,33 +203,98 @@ curl -X POST "http://localhost:8083/tools/seq2exp_predict" \
 ### Example 2: Production Configuration
 
 ```bash
-curl -X POST "http://localhost:8083/tools/seq2exp_predict" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "config_content": "# Production configuration\nseqFile = iData/rhoseq.txt\nexprFile = iData/rhoexp.tab\nmotifFile = iData/factordts.wtmx\nfactorExprFile = iData/factorexpdts2s.tab\nfactorInfoFile = iData/factorinfodts.txt\nbindingSitesFile = iData/fas.txt\nbindingIntensityFile = iData/topbot2Int.txt\nparamFile = iData/synmyout6\nmodelOption = BINS\nobjOption = corr\ncoopFile = iData/coopdt.txt\nnAlternations = 1\nnRandomStarts = 5\nenergyThreshold = 7\noutputFile = out.txt\ndcFile = iData/coreOPT0dc1.txt\nduFile = iData/coreOPT0du1.txt"
-  }'
+### Example 2: Production Run (via MCP)
+
+```python
+# Example MCP tool call for production prediction
+import asyncio
+from fastmcp import FastMCP
+
+async def run_production_prediction():
+    # Connect to seq2exp MCP server
+    mcp = FastMCP("seq2exp-client")
+    
+    config_content = """# Production configuration
+seqFile = iData/rhoseq.txt
+exprFile = iData/rhoexp.tab
+motifFile = iData/factordts.wtmx
+factorExprFile = iData/factorexpdts2s.tab
+factorInfoFile = iData/factorinfodts.txt
+bindingSitesFile = iData/fas.txt
+bindingIntensityFile = iData/topbot2Int.txt
+paramFile = iData/synmyout6
+modelOption = BINS
+objOption = corr
+coopFile = iData/coopdt.txt
+nAlternations = 1
+nRandomStarts = 5
+energyThreshold = 7
+outputFile = out.txt
+dcFile = iData/coreOPT0dc1.txt
+duFile = iData/coreOPT0du1.txt"""
+    
+    result = await mcp.call_tool("seq2exp_predict", {"config_content": config_content})
+    return result
 ```
 
 **Expected Response Time:** ~3-5 seconds
 
-### Example 3: Configuration Validation
-
-```bash
-curl -X POST "http://localhost:8083/tools/seq2exp_validate_config" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "config_content": "seqFile = iData/rhoseq.txt\nexprFile = iData/rhoexp.tab\ninvalidParameter = badValue"
-  }'
-```
-
-## Python Client Example
+### Example 3: Configuration Validation (via MCP)
 
 ```python
-import aiohttp
+# Example MCP validation call
+async def validate_config():
+    mcp = FastMCP("seq2exp-client")
+    
+    test_config = """seqFile = iData/rhoseq.txt
+exprFile = iData/rhoexp.tab
+invalidParameter = badValue"""
+    
+    result = await mcp.call_tool("seq2exp_validate_config", {"config_content": test_config})
+    return result
+```
+
+## MCP Integration Example
+
+```python
+#!/usr/bin/env python3
+"""
+Example MCP integration with seq2exp server
+"""
 import asyncio
 import json
+import subprocess
+import sys
 
-async def run_seq2exp_prediction():
+async def test_mcp_server():
+    # Start seq2exp MCP server
+    process = await asyncio.create_subprocess_exec(
+        sys.executable, "seq2exp_mcp_server.py",
+        stdin=asyncio.subprocess.PIPE,
+        stdout=asyncio.subprocess.PIPE,
+        stderr=asyncio.subprocess.PIPE
+    )
+    
+    # MCP initialization
+    init_request = {
+        "jsonrpc": "2.0",
+        "id": 1,
+        "method": "initialize",
+        "params": {
+            "protocolVersion": "2024-11-05",
+            "capabilities": {"roots": {}, "sampling": {}},
+            "clientInfo": {"name": "test-client", "version": "1.0.0"}
+        }
+    }
+    
+    process.stdin.write((json.dumps(init_request) + "\n").encode())
+    await process.stdin.drain()
+    
+    # Read initialization response
+    response = await process.stdout.readline()
+    print(f"Init response: {response.decode()}")
+    
+    # Call seq2exp prediction tool
     config = """# Fast test config
 seqFile = iData/rhoseq.txt
 exprFile = iData/rhoexp.tab
@@ -223,11 +314,30 @@ outputFile = out.txt
 dcFile = iData/coreOPT0dc1.txt
 duFile = iData/coreOPT0du1.txt"""
 
-    async with aiohttp.ClientSession() as session:
-        async with session.post(
-            'http://localhost:8083/tools/seq2exp_predict',
-            json={'config_content': config}
-        ) as response:
+    prediction_request = {
+        "jsonrpc": "2.0", 
+        "id": 2,
+        "method": "tools/call",
+        "params": {
+            "name": "seq2exp_predict",
+            "arguments": {"config_content": config}
+        }
+    }
+    
+    process.stdin.write((json.dumps(prediction_request) + "\n").encode())
+    await process.stdin.drain()
+    
+    # Read prediction response
+    response = await process.stdout.readline()
+    result = json.loads(response.decode())
+    print(f"Prediction result: {result}")
+    
+    process.terminate()
+    return result
+
+if __name__ == "__main__":
+    asyncio.run(test_mcp_server())
+```
             result = await response.json()
             
             if result['success']:
@@ -284,12 +394,16 @@ The server provides comprehensive error handling:
 
 - **Testing Parameters**: Use `nRandomStarts=1, energyThreshold=5` for ~1-2 second execution
 - **Production Parameters**: Use `nRandomStarts=5+, energyThreshold=7+` for accurate results (3-30 minutes)
-- **Concurrent Requests**: Server handles multiple simultaneous requests
 - **Timeout**: Default 120-second timeout for seq2exp execution
 
-## OpenAPI Documentation
+## MCP Protocol
 
-When the server is running, visit `http://localhost:8083/docs` for interactive API documentation with Swagger UI.
+This server implements the MCP (Model Context Protocol) for direct integration with Claude Desktop:
+
+1. **stdio Transport**: Uses JSON-RPC over stdin/stdout
+2. **Tool Registration**: 4 MCP tools automatically registered
+3. **Error Handling**: Structured MCP error responses
+4. **Process Isolation**: No network exposure, direct process communication
 
 ## Dependencies
 
@@ -299,14 +413,13 @@ When the server is running, visit `http://localhost:8083/docs` for interactive A
 - LaTeX (for PDF generation): `sudo apt-get install texlive`
 
 ### Python Requirements
-- FastAPI
-- uvicorn
-- aiofiles
-- python-multipart
+- fastmcp (MCP framework)
+- aiofiles (async file operations)
+- pydantic (data validation)
 
 Install with:
 ```bash
-pip install fastapi uvicorn aiofiles python-multipart
+pip install fastmcp>=2.11.0 aiofiles>=23.2.0 pydantic>=2.0.0
 ```
 
 ## Architecture
