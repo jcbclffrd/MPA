@@ -4,15 +4,7 @@
 # Ignore build artifacts
 *.o
 seq2exp
-mcp_demo
 __pycache__/
-# Don't ignore the MCP files
-!mcp_tools.h
-!mcp_tools.cpp
-!mcp_demo.cpp
-!MCP_TOOLS.md
-!mcp_config.json
-!example_usage.sh
 
 # But don't ignore the Makefile
 !Makefile
@@ -76,3 +68,6 @@ plot.ps
 plot.aux
 plot.dvi
 plot.ps
+plot.log
+comprehensive_test.yml
+server_up_down_test.yml

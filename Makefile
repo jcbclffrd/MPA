@@ -12,10 +12,10 @@ RELEASE_FLAGS = -O3
 CFLAGS = $(DEBUG_FLAGS) $(INC) 
 
 LIB_DIRS = -L$(GSL_DIR)/lib
-LIBS = -lgsl -lgslcblas -lm -ljsoncpp
+LIBS = -lgsl -lgslcblas -lm
 LFLAGS = $(DEBUG_FLAGS) $(LIB_DIRS) $(LIBS)
 
-BIN =  seq2exp mcp_demo
+BIN = seq2exp
 all: $(BIN)
 
 clean:
@@ -27,15 +27,8 @@ ExprPredictor.o : Tools.h ExprPredictor.h  ExprPredictor.cpp
 	$(CC) $(CFLAGS) -c ExprPredictor.cpp
 seq2exp.o : Tools.h ExprPredictor.h seq2exp.cpp
 	$(CC) $(CFLAGS) -c seq2exp.cpp
-mcp_tools.o : mcp_tools.h mcp_tools.cpp ExprPredictor.h Tools.h
-	$(CC) $(CFLAGS) -c mcp_tools.cpp
-mcp_demo.o : mcp_tools.h mcp_demo.cpp
-	$(CC) $(CFLAGS) -c mcp_demo.cpp
 
 seq2exp : Tools.o ExprPredictor.o seq2exp.o 
 	$(CC) -o $@ Tools.o ExprPredictor.o seq2exp.o $(LFLAGS) 
-
-mcp_demo : Tools.o ExprPredictor.o mcp_tools.o mcp_demo.o
-	$(CC) -o $@ Tools.o ExprPredictor.o mcp_tools.o mcp_demo.o $(LFLAGS) 
 
 
